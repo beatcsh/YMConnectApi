@@ -6,25 +6,33 @@ using YMConnect;
 public class RobotController: ControllerBase
 {
 
-    [HttpGet("msg")]
-    public IActionResult SendMessage()
+    private const string robot_ip = "192.168.1.31";
+
+    private MotomanController OpenMotomanConnection(string ip, out StatusInfo status)
+    {
+        return MotomanController.OpenConnection(ip, out status);
+    }
+
+    private void CloseMotomanConnection(MotomanController controller)
+    {
+        controller?.CloseConnection();
+    }
+
+    [HttpGet("msg/{msg}")]
+    public IActionResult SendMessage(string msg)
     {
         try
         {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
 
-            MotomanController c = MotomanController.OpenConnection("192.168.1.31", out StatusInfo status);
-
-            status = c.ControlCommands.DisplayStringToPendant("comunicacion dada");
-
-            Console.WriteLine(status);
-
-            c.CloseConnection();
-
+            status = c.ControlCommands.DisplayStringToPendant(msg);
+            CloseMotomanConnection(c);
             return Ok(status);
         }
         catch (Exception ex)
         {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+            return StatusCode(500, "Error al mandar mensaje al robot: " + ex.Message);
         }
     }
 
@@ -33,15 +41,11 @@ public class RobotController: ControllerBase
     {
         try
         {
-
-            MotomanController c = MotomanController.OpenConnection("192.168.1.31", out StatusInfo status);
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
 
             status = c.Status.ReadState(out ControllerStateData stateData);
-            
-            Console.WriteLine(stateData);
-
-            c.CloseConnection();
-
+            CloseMotomanConnection(c);
             return Ok(stateData);
         }
         catch (Exception ex)
@@ -55,20 +59,52 @@ public class RobotController: ControllerBase
     {
         try
         {
-
-            MotomanController c = MotomanController.OpenConnection("192.168.1.31", out StatusInfo status);
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
 
             status = c.Job.SetActiveJob(nombre, 0);
-
             status = c.ControlCommands.SetServos(SignalStatus.ON);
-
             status = c.ControlCommands.StartJob();
-
             status = c.ControlCommands.SetServos(SignalStatus.OFF);
 
-            c.CloseConnection();
-
+            CloseMotomanConnection(c);
             return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("exeJob")]
+    public IActionResult GetExecutingData()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Job.GetExecutingJobInformation(InformTaskNumber.Master, out JobData jobData);
+            CloseMotomanConnection(c);
+            return Ok(jobData);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("jobStack")]
+    public IActionResult GetRobotJobStack()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Job.GetJobStack(InformTaskNumber.Master, out List<string> jobStack);
+            CloseMotomanConnection(c);
+            return Ok(jobStack);
         }
         catch (Exception ex)
         {
@@ -79,13 +115,14 @@ public class RobotController: ControllerBase
     [HttpGet("coordinates")]
     public IActionResult GetCoordinates()
     {
-        MotomanController c = MotomanController.OpenConnection("192.168.1.31", out StatusInfo status);
+        StatusInfo status;
+        var c = OpenMotomanConnection(robot_ip, out status);
 
         status = c.ControlGroup.ReadPositionData(ControlGroupId.R1, CoordinateType.Pulse, 0, 0, out PositionData positionData);
-        Console.WriteLine(positionData);
 
+        CloseMotomanConnection(c);
+        return Ok(positionData.AxisData);
         /*
-         
         EJEMPLO de datos que se regresan en el AxisData
 
         Se devulve un array en el return donde solo se acede por posicion
@@ -99,14 +136,7 @@ public class RobotController: ControllerBase
             T: 0 pulse
             E: 0 pulse
             W: 0 pulse
-         
          */
-
-        Console.WriteLine(status);
-
-        c.CloseConnection();
-
-        return Ok(positionData.AxisData);
     }
 
 }
