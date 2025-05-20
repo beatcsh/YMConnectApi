@@ -62,10 +62,9 @@ public class RobotController: ControllerBase
             StatusInfo status;
             var c = OpenMotomanConnection(robot_ip, out status);
 
-            status = c.Job.SetActiveJob(nombre, 0);
             status = c.ControlCommands.SetServos(SignalStatus.ON);
+            status = c.Job.SetActiveJob(nombre, 0);
             status = c.ControlCommands.StartJob();
-            status = c.ControlCommands.SetServos(SignalStatus.OFF);
 
             CloseMotomanConnection(c);
             return Ok(status);
