@@ -54,6 +54,25 @@ public class RobotController: ControllerBase
         }
     }
 
+    [HttpGet("information")]
+    public IActionResult GetRobotData()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Status.ReadSystemInformation(SystemInfoId.R1, out SystemInfoData systemInfoData);
+
+            CloseMotomanConnection(c);
+            return Ok(systemInfoData);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
     [HttpGet("setJob/{nombre}")]
     public IActionResult SetJob(string nombre)
     {
@@ -63,9 +82,6 @@ public class RobotController: ControllerBase
             var c = OpenMotomanConnection(robot_ip, out status);
 
             status = c.Job.SetActiveJob(nombre, 0);
-            status = c.ControlCommands.SetServos(SignalStatus.ON);
-            status = c.ControlCommands.StartJob();
-            status = c.ControlCommands.SetServos(SignalStatus.OFF);
 
             CloseMotomanConnection(c);
             return Ok(status);
@@ -75,6 +91,8 @@ public class RobotController: ControllerBase
             return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
         }
     }
+
+    // public enum CycleMode { Step = 0, Cycle, Automatic };
 
     [HttpGet("exeJob")]
     public IActionResult GetExecutingData()
@@ -94,17 +112,19 @@ public class RobotController: ControllerBase
         }
     }
 
-    [HttpGet("jobStack")]
-    public IActionResult GetRobotJobStack()
+    [HttpGet("startJob")]
+    public IActionResult StartJob()
     {
         try
         {
             StatusInfo status;
             var c = OpenMotomanConnection(robot_ip, out status);
 
-            status = c.Job.GetJobStack(InformTaskNumber.Master, out List<string> jobStack);
+            status = c.ControlCommands.SetServos(SignalStatus.ON);
+            status = c.ControlCommands.StartJob();
+
             CloseMotomanConnection(c);
-            return Ok(jobStack);
+            return Ok(status);
         }
         catch (Exception ex)
         {
