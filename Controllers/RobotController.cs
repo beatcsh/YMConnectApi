@@ -5,19 +5,22 @@ using YMConnect;
 [ApiController]
 public class RobotController: ControllerBase
 {
-
+    // constante con la direccion IP del robot (viene predefinida en el sistema Dx200)
     private const string robot_ip = "192.168.1.31";
 
+    // se agrego una funcion que maneja la conexion por medio de la IP, esto se realiza por medio de TCP/IP
     private MotomanController OpenMotomanConnection(string ip, out StatusInfo status)
     {
         return MotomanController.OpenConnection(ip, out status);
     }
 
+    // este metodo se encarga de cerrar la conexion con el robot, aunque primero verifica que le pase un controlador valido
     private void CloseMotomanConnection(MotomanController controller)
     {
         controller?.CloseConnection();
     }
 
+    // este metodo manda un mensaje al robot, el cual se muestra en la pantalla del pendant (es un metodo de depuracion)
     [HttpGet("msg/{msg}")]
     public IActionResult SendMessage(string msg)
     {
@@ -36,6 +39,7 @@ public class RobotController: ControllerBase
         }
     }
 
+    // este metodo se encarga de obtener el estado del robot, se devuelve un objeto de tipo ControllerStateData
     [HttpGet("status")]
     public IActionResult GetRobotStatus()
     {
@@ -54,6 +58,7 @@ public class RobotController: ControllerBase
         }
     }
 
+    // este metodo se encarga de obtener informacion del robot, se devuelve un objeto de tipo SystemInfoData
     [HttpGet("information")]
     public IActionResult GetRobotData()
     {
@@ -73,6 +78,7 @@ public class RobotController: ControllerBase
         }
     }
 
+    // este metodo se encarga de cambiar el trabajo activo, se devuelve el estado del robot [codigo 0 es que todo esta bien]
     [HttpGet("setJob/{nombre}")]
     public IActionResult SetJob(string nombre)
     {
@@ -93,7 +99,7 @@ public class RobotController: ControllerBase
     }
 
     // public enum CycleMode { Step = 0, Cycle, Automatic };
-
+    // este metodo obtiene la informacion del JOB que se esta ejecutando en el momento
     [HttpGet("exeJob")]
     public IActionResult GetExecutingData()
     {
@@ -112,6 +118,7 @@ public class RobotController: ControllerBase
         }
     }
 
+    // este metodo se encarga de iniciar el JOB activo del robot
     [HttpGet("startJob")]
     public IActionResult StartJob()
     {
@@ -132,6 +139,26 @@ public class RobotController: ControllerBase
         }
     }
 
+    [HttpGet("stopJob")]
+    public IActionResult StopJob()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.ControlCommands.SetServos(SignalStatus.OFF);
+
+            CloseMotomanConnection(c);
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
+    // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
     [HttpGet("coordinates")]
     public IActionResult GetCoordinates()
     {
