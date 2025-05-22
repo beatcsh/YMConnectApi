@@ -49,6 +49,19 @@ public class RobotController: ControllerBase
             var c = OpenMotomanConnection(robot_ip, out status);
 
             status = c.Status.ReadState(out ControllerStateData stateData);
+            /*
+            cyclemode
+
+            0 = STEP
+            1 = CYCLE
+            2 = AUTO
+
+            controlmode
+
+            0 = TEACH
+            1 = PLAY
+            2 = REMOTE            
+            */
             CloseMotomanConnection(c);
             return Ok(stateData);
         }
@@ -78,6 +91,45 @@ public class RobotController: ControllerBase
         }
     }
 
+    /*
+    
+    Metodo Omitido: La lista no esta tomando los valores que deberia, mostranto una lista vacia hasta ahora
+    el metodo de depuracion fue una condicional que evalua el largo de dicha lista, la documentacion no abarca
+    el error que se presenta
+
+    [HttpGet("jobList")]
+    public IActionResult GetJobList()
+    {
+        try
+        {
+            StatusInfo status;
+
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Job.GetJobStack(InformTaskNumber.Master, out List<string> jobStack);
+            Console.WriteLine(status);
+
+            if (jobStack.Count > 0)
+            {
+                Console.WriteLine("hay jobs");
+            }
+            else
+            {
+                Console.WriteLine("no hay jobs");
+            }
+
+            CloseMotomanConnection(c);
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+
+    }
+
+    */
+
     // este metodo se encarga de cambiar el trabajo activo, se devuelve el estado del robot [codigo 0 es que todo esta bien]
     [HttpGet("setJob/{nombre}")]
     public IActionResult SetJob(string nombre)
@@ -98,7 +150,6 @@ public class RobotController: ControllerBase
         }
     }
 
-    // public enum CycleMode { Step = 0, Cycle, Automatic };
     // este metodo obtiene la informacion del JOB que se esta ejecutando en el momento
     [HttpGet("exeJob")]
     public IActionResult GetExecutingData()
@@ -139,6 +190,7 @@ public class RobotController: ControllerBase
         }
     }
 
+    // funcionalidad para detener el robot mientras se esta ejecutando un JOB se detiene solamente apagando servos
     [HttpGet("stopJob")]
     public IActionResult StopJob()
     {
