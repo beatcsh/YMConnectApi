@@ -3,7 +3,7 @@ using YMConnect;
 
 [Route("[controller]")]
 [ApiController]
-public class RobotController: ControllerBase
+public class RobotController : ControllerBase
 {
     // constante con la direccion IP del robot (viene predefinida en el sistema Dx200)
     private const string robot_ip = "192.168.1.31";
@@ -50,6 +50,7 @@ public class RobotController: ControllerBase
 
             status = c.Status.ReadState(out ControllerStateData stateData);
             /*
+            
             cyclemode
 
             0 = STEP
@@ -60,7 +61,8 @@ public class RobotController: ControllerBase
 
             0 = TEACH
             1 = PLAY
-            2 = REMOTE            
+            2 = REMOTE 
+
             */
             CloseMotomanConnection(c);
             return Ok(stateData);
@@ -91,35 +93,23 @@ public class RobotController: ControllerBase
         }
     }
 
-    /*
-    
-    Metodo Omitido: La lista no esta tomando los valores que deberia, mostranto una lista vacia hasta ahora
-    el metodo de depuracion fue una condicional que evalua el largo de dicha lista, la documentacion no abarca
-    el error que se presenta
-
     [HttpGet("jobList")]
     public IActionResult GetJobList()
     {
         try
         {
             StatusInfo status;
-
             var c = OpenMotomanConnection(robot_ip, out status);
 
-            status = c.Job.GetJobStack(InformTaskNumber.Master, out List<string> jobStack);
+            status = c.Files.ListFiles(FileType.Job_JBI, out List<string> fileList, true);
+
             Console.WriteLine(status);
-
-            if (jobStack.Count > 0)
+            foreach (string file in fileList)
             {
-                Console.WriteLine("hay jobs");
-            }
-            else
-            {
-                Console.WriteLine("no hay jobs");
+                Console.WriteLine(file);
             }
 
-            CloseMotomanConnection(c);
-            return Ok();
+            return Ok(fileList);
         }
         catch (Exception ex)
         {
@@ -127,8 +117,6 @@ public class RobotController: ControllerBase
         }
 
     }
-
-    */
 
     // este metodo se encarga de cambiar el trabajo activo, se devuelve el estado del robot [codigo 0 es que todo esta bien]
     [HttpGet("setJob/{nombre}")]
@@ -210,6 +198,38 @@ public class RobotController: ControllerBase
         }
     }
 
+    /*
+        [HttpGet("setInitialPosition")]
+        public IActionResult SetInitialPosition()
+        {
+            try
+            {
+                StatusInfo status;
+                var c = OpenMotomanConnection(robot_ip, out status);
+
+                PositionData zero = new PositionData
+                {
+                    CoordinateType = CoordinateType.Pulse,
+                    AxisData = [0, 0, 0, 0, 0, 0, 0, 0]
+                };
+
+                JointMotion zeroMotion = new JointMotion(ControlGroupId.R1, zero, 25.00);
+
+                Console.WriteLine(zeroMotion);
+                status = c.ControlCommands.SetServos(SignalStatus.ON);
+                status = c.MotionManager.AddPointToTrajectory(zeroMotion);
+                status = c.MotionManager.MotionStart();
+
+                CloseMotomanConnection(c);
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+            }
+        }
+    */
+
     // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
     [HttpGet("coordinates")]
     public IActionResult GetCoordinates()
@@ -219,6 +239,7 @@ public class RobotController: ControllerBase
 
         status = c.ControlGroup.ReadPositionData(ControlGroupId.R1, CoordinateType.Pulse, 0, 0, out PositionData positionData);
 
+        Console.WriteLine(positionData);
         CloseMotomanConnection(c);
         return Ok(positionData.AxisData);
         /*
