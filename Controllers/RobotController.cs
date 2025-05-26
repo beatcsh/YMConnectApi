@@ -198,37 +198,35 @@ public class RobotController : ControllerBase
         }
     }
 
-    /*
-        [HttpGet("setInitialPosition")]
-        public IActionResult SetInitialPosition()
+    [HttpGet("setInitialPosition")]
+    public IActionResult SetInitialPosition()
+    {
+        try
         {
-            try
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            PositionData zero = new PositionData
             {
-                StatusInfo status;
-                var c = OpenMotomanConnection(robot_ip, out status);
+                CoordinateType = CoordinateType.Pulse,
+                AxisData = [ 0, 0, 0, 0, 0, 0, 0, 0 ]
+            };
 
-                PositionData zero = new PositionData
-                {
-                    CoordinateType = CoordinateType.Pulse,
-                    AxisData = [0, 0, 0, 0, 0, 0, 0, 0]
-                };
+            LinearMotion zeroMotion = new LinearMotion(ControlGroupId.R1, zero, 25.00, new MotionAccelDecel());
 
-                JointMotion zeroMotion = new JointMotion(ControlGroupId.R1, zero, 25.00);
+            Console.WriteLine(zeroMotion);
+            status = c.ControlCommands.SetServos(SignalStatus.ON);
+            status = c.MotionManager.AddPointToTrajectory(zeroMotion);
+            status = c.MotionManager.MotionStart();
 
-                Console.WriteLine(zeroMotion);
-                status = c.ControlCommands.SetServos(SignalStatus.ON);
-                status = c.MotionManager.AddPointToTrajectory(zeroMotion);
-                status = c.MotionManager.MotionStart();
-
-                CloseMotomanConnection(c);
-                return Ok(status);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-            }
+            CloseMotomanConnection(c);
+            return Ok(status);
         }
-    */
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
 
     // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
     [HttpGet("coordinates")]
