@@ -165,7 +165,7 @@ public class RobotController : ControllerBase
         {
             StatusInfo status;
             var c = OpenMotomanConnection(robot_ip, out status);
-
+            status = c.ControlCommands.SetCycleMode(CycleMode.Cycle);
             status = c.ControlCommands.SetServos(SignalStatus.ON);
             status = c.ControlCommands.StartJob();
 
@@ -209,7 +209,7 @@ public class RobotController : ControllerBase
             PositionData zero = new PositionData
             {
                 CoordinateType = CoordinateType.Pulse,
-                AxisData = [ 0, 0, 0, 0, 0, 0, 0, 0 ]
+                AxisData = [0, 0, 0, 0, 0, 0, 0, 0]
             };
 
             LinearMotion zeroMotion = new LinearMotion(ControlGroupId.R1, zero, 25.00, new MotionAccelDecel());
@@ -225,6 +225,82 @@ public class RobotController : ControllerBase
         catch (Exception ex)
         {
             return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
+    /*  Metodo omitido por error del robot en uso, devuelve solo 0 en todo el historial
+        [HttpGet("getAlarmsHistory")]
+        public IActionResult GetAlarmsHistory()
+        {
+            try
+            {
+                StatusInfo status;
+                var c = OpenMotomanConnection(robot_ip, out status);
+
+                status = c.Faults.GetAlarmHistory(AlarmCategory.Major, 5, out AlarmHistory alarmHistoryData);
+                Console.WriteLine(alarmHistoryData);
+
+                return Ok(alarmHistoryData);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
+            }
+        }
+    */
+
+    [HttpGet("changeCycle")]
+    public IActionResult SetCycleMode()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.ControlCommands.SetCycleMode(CycleMode.Automatic);
+
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("activeAlarms")] // este endpoint devuelve las alarmas activas del robot se imprime en consola por la depuracion, pero se omitira en la version final
+    public IActionResult GetActiveAlarms()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Faults.GetActiveAlarms(out ActiveAlarms alarms);
+            Console.WriteLine(alarms);
+
+            return Ok(alarms);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("clearErrors")] // se limpian los errores 
+    public IActionResult clearErrors()
+    {
+        try
+        {
+            StatusInfo status;
+            var c = OpenMotomanConnection(robot_ip, out status);
+
+            status = c.Faults.ClearAllFaults();
+
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
         }
     }
 
