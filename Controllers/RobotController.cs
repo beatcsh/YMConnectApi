@@ -423,9 +423,8 @@ public class RobotController : ControllerBase
 ____\___    ____|______   \______|___________
         |::|           '--`           
         |::|
-        |::|      Duermo fuera de casa,     
-        |::|          como Snoopy
+        |::|           
+        |::|          
         |::;
         `:/
-
 */
