@@ -8,7 +8,8 @@ Esta es una interfaz de comunicacion desarrollada con C# (.NET) para permitir le
 
 - ⚙️ .NET 8 (ASP.NET Web API)
 - 🔌 TCP/IP (comunicación directa con el robot)
-- 🗼 Yaskawa Motoman (YMConnect)
+- 🗼 YMConnect SDK
+- 🤖 Robot industrial Yaskawa (proyecto desarrollado con un controlador Dx200)
 
 ---
 
