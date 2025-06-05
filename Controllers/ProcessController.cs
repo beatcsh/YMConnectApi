@@ -145,4 +145,42 @@ public class ProcessController : ControllerBase
         }
     }
 
+    [HttpGet("coordinates")] // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
+    public IActionResult GetCoordinates()
+    {
+        try
+        {
+            var c = _robotService.OpenConnection(out StatusInfo status);
+
+            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
+
+            status = c.ControlGroup.ReadPositionData(ControlGroupId.R1, CoordinateType.Pulse, 0, 0, out PositionData positionData);
+
+            Console.WriteLine(positionData);
+            _robotService.CloseConnection(c);
+            return Ok(positionData.AxisData);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
 }
+
+/*
+
+INFORMACION IMPORTANTE
+En la funcion de las coordenadas se devuelve un objeto de la clase AxisData que luce algo asi:
+ 
+AxisData
+    S: 4582 pulse
+    L: -55615 pulse
+    U: -7 pulse
+    R: -7399 pulse
+    B: 0 pulse
+    T: 0 pulse
+    E: 0 pulse
+    W: 0 pulse
+    
+*/

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using YMConnectApi.Services;
 using YMConnect;
+using System;
+using System.IO;
 
 [Route("[controller]")]
 [ApiController]
@@ -65,7 +67,7 @@ public class JobsController : ControllerBase
             status = c.Files.SaveFromControllerToString(nombre, out string jobContents);
 
             _robotService.CloseConnection(c);
-            return Ok(jobContents);
+            return Ok(new { content = jobContents });
         }
         catch (Exception ex)
         {
@@ -74,7 +76,7 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("uploadJob/{path}")] // este metodo permite enviar los archivos por medio de YMConnect
-    public IActionResult uploadJob(String path)
+    public IActionResult UploadJob(String path)
     {
         try
         {
@@ -82,6 +84,25 @@ public class JobsController : ControllerBase
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.LoadToControllerFromPath(path);
+
+            _robotService.CloseConnection(c);
+            return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("saveJob/{job}")] // este metodo permite enviar los archivos por medio de YMConnect
+    public IActionResult SaveJob(String job)
+    {
+        try
+        {
+            var c = _robotService.OpenConnection(out StatusInfo status);
+            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
+
+            status = c.Files.SaveFromControllerToFile(job, "C:/Users/js379/Documents/JOBS", true);
 
             _robotService.CloseConnection(c);
             return Ok(status);
