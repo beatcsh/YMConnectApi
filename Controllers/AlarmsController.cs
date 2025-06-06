@@ -41,10 +41,10 @@ public class AlarmsController : ControllerBase
             var c = _robotService.OpenConnection(out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.Faults.GetAlarmHistory(AlarmCategory.Major, 5, out AlarmHistory alarmHistoryData);
-            _robotService.CloseConnection(c);
+            status = c.Files.SaveFromControllerToString("ALMHIST.DAT", out string almHistory);
 
-            return Ok(alarmHistoryData);
+            _robotService.CloseConnection(c);
+            return Ok(almHistory);
         }
         catch (Exception ex)
         {
@@ -53,7 +53,7 @@ public class AlarmsController : ControllerBase
     }
 
     [HttpGet("clearErrors")] // esto cuenta como el reset, saludos a los fans de Penta el Zero Miedo
-    public IActionResult clearErrors()
+    public IActionResult ClearErrors()
     {
         try
         {
@@ -63,6 +63,25 @@ public class AlarmsController : ControllerBase
             status = c.Faults.ClearAllFaults();
             _robotService.CloseConnection(c);
             return Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
+        }
+    }
+
+    [HttpGet("readIO")]
+    public IActionResult GetIoData()
+    {
+        try
+        {
+            var c = _robotService.OpenConnection(out StatusInfo status);
+            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
+
+            status = c.IO.ReadBit(81320, out bool value);
+
+            _robotService.CloseConnection(c);
+            return Ok(value);
         }
         catch (Exception ex)
         {
