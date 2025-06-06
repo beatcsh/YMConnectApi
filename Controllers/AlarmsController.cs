@@ -70,15 +70,21 @@ public class AlarmsController : ControllerBase
         }
     }
 
-    [HttpGet("readIO")]
-    public IActionResult GetIoData()
+    [HttpGet("readIO/{codeIo}")]
+    public IActionResult GetIoData(uint codeIo)
     {
         try
         {
             var c = _robotService.OpenConnection(out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.IO.ReadBit(81320, out bool value);
+            status = c.IO.ReadBit(codeIo, out bool value);
+            /*
+            
+            antorcha IO code: 10020
+            paro del pendant: 80026
+            
+            */
 
             _robotService.CloseConnection(c);
             return Ok(value);
