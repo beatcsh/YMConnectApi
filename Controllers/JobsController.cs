@@ -102,7 +102,7 @@ public class JobsController : ControllerBase
             var c = _robotService.OpenConnection(out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.Files.SaveFromControllerToFile(job, "C:/Users/js379/Documents/JOBS", true);
+            status = c.Files.SaveFromControllerToFile(job, @"C:\JOBS", true);
 
             _robotService.CloseConnection(c);
             return Ok(status);

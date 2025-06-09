@@ -154,7 +154,7 @@ public class ProcessController : ControllerBase
 
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.ControlGroup.ReadPositionData(ControlGroupId.R1, CoordinateType.Pulse, 0, 0, out PositionData positionData);
+            status = c.ControlGroup.ReadPositionData(ControlGroupId.R1, CoordinateType.Pulse, 1, 0, out PositionData positionData);
 
             Console.WriteLine(positionData);
             _robotService.CloseConnection(c);

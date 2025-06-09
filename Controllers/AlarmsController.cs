@@ -70,15 +70,15 @@ public class AlarmsController : ControllerBase
         }
     }
 
-    [HttpGet("readIO")]
-    public IActionResult GetIoData()
+    [HttpGet("readSpecificIO/{code}")]
+    public IActionResult GetIoData(uint code)
     {
         try
         {
             var c = _robotService.OpenConnection(out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.IO.ReadBit(81320, out bool value);
+            status = c.IO.ReadBit(code, out bool value);
 
             _robotService.CloseConnection(c);
             return Ok(value);
@@ -88,5 +88,45 @@ public class AlarmsController : ControllerBase
             return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
         }
     }
+
+    [HttpGet("readIO")]
+    public IActionResult GetMultipleIoData()
+    {
+        try
+        {
+            var c = _robotService.OpenConnection(out StatusInfo status);
+            if (c == null) return StatusCode(500, "No se pudo establecer una conexión");
+
+            var ioCodes = new Dictionary<uint, string>
+            {
+                { 10020, "torch" },
+                { 80026, "pendantStop" },
+                { 80025, "externalStop" },
+                { 80027, "doorEmergencyStop" },
+                { 80013, "teachMode" },
+                { 80012, "playMode" },
+                { 80011, "remoteMode" },
+                { 80015, "hold" },
+                { 80016, "start" },
+                { 80017, "servosReady" }
+            };
+
+            var results = new Dictionary<string, bool>();
+
+            foreach (var kvp in ioCodes)
+            {
+                status = c.IO.ReadBit(kvp.Key, out bool value);
+                results[kvp.Value] = value;
+            }
+
+            _robotService.CloseConnection(c);
+            return Ok(results);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Error al obtener los estados IO del robot: " + ex.Message);
+        }
+    }
+
 
 }
