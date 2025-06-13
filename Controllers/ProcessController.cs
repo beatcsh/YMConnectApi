@@ -86,6 +86,7 @@ public class ProcessController : ControllerBase
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.ControlCommands.SetServos(SignalStatus.OFF);
+            status = c.IO.WriteBit(IOType.GeneralOutput, 10020, 0, false);
 
             _robotService.CloseConnection(c);
             return Ok(status);
