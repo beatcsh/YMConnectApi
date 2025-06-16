@@ -16,12 +16,12 @@ public class ProcessController : ControllerBase
     }
 
     // este metodo se encarga de cambiar el trabajo activo, se devuelve el estado del robot [codigo 0 es que todo esta bien]
-    [HttpGet("setJob/{nombre}")]
-    public IActionResult SetJob(string nombre)
+    [HttpGet("setJob")]
+    public IActionResult SetJob([FromQuery] string nombre, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Job.SetActiveJob(nombre, 0);
@@ -37,11 +37,11 @@ public class ProcessController : ControllerBase
 
     // este metodo obtiene la informacion del JOB que se esta ejecutando en el momento
     [HttpGet("exeJob")]
-    public IActionResult GetExecutingData()
+    public IActionResult GetExecutingData([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Job.GetExecutingJobInformation(InformTaskNumber.Master, out JobData jobData);
@@ -56,11 +56,11 @@ public class ProcessController : ControllerBase
 
     // este metodo se encarga de iniciar el JOB activo del robot
     [HttpGet("startJob")]
-    public IActionResult StartJob()
+    public IActionResult StartJob([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.ControlCommands.SetCycleMode(CycleMode.Cycle);
@@ -78,15 +78,15 @@ public class ProcessController : ControllerBase
 
     // funcionalidad para detener el robot mientras se esta ejecutando un JOB se detiene solamente apagando servos
     [HttpGet("stopJob")]
-    public IActionResult StopJob()
+    public IActionResult StopJob([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.ControlCommands.SetServos(SignalStatus.OFF);
-            status = c.IO.WriteBit(IOType.GeneralOutput, 10020, 0, false);
+            status = c.IO.WriteBit(IOType.ExternalOutput, 10020, 0, false);
 
             _robotService.CloseConnection(c);
             return Ok(status);
@@ -97,13 +97,13 @@ public class ProcessController : ControllerBase
         }
     }
 
-    // METODO QUE NOMAS NO QUIERE FUNCIONAR PORQUE NO REGRESA AL ROBOT
+    // METODO QUE NOMAS NO QUIERE FUNCIONAR PORQUE NO REGRESA AL ROBOT Y TIENE LA LIMITANTE DE QUE NO FUNCIONA CON GENERACIONES ANTES DEL YRC1000
     [HttpGet("setInitialPosition")]
-    public IActionResult SetInitialPosition()
+    public IActionResult SetInitialPosition([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             PositionData destination = new PositionData();
@@ -128,11 +128,11 @@ public class ProcessController : ControllerBase
 
     // METODO PARA CAMBIAR EL CICLO, AQUI ES DE PRUEBA NADA MAS
     [HttpGet("changeCycle")]
-    public IActionResult SetCycleMode()
+    public IActionResult SetCycleMode([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.ControlCommands.SetCycleMode(CycleMode.Automatic);
@@ -147,11 +147,11 @@ public class ProcessController : ControllerBase
     }
 
     [HttpGet("coordinates")] // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
-    public IActionResult GetCoordinates()
+    public IActionResult GetCoordinates([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
 
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 

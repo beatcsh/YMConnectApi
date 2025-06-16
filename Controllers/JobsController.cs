@@ -18,11 +18,11 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("jobList")] // trae la lista de archivos, por configuracion del robot sule devolver un archivo vacio, se soluciona omitiendo valores nulos
-    public IActionResult GetJobList()
+    public IActionResult GetJobList([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.ListFiles(FileType.Job_JBI, out List<string> fileList, true);
@@ -38,11 +38,11 @@ public class JobsController : ControllerBase
     }
 
     [HttpGet("countJobs")] // esta funcion de aqui o metodo como le quieran llamar se utiliza para contar cuantos JOBs se tienen
-    public IActionResult GetJobsCount()
+    public IActionResult GetJobsCount([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.GetFileCount(FileType.Job_JBI, out Int32 count);
@@ -56,12 +56,12 @@ public class JobsController : ControllerBase
         }
     }
 
-    [HttpGet("getStringJob/{nombre}")] // Omar AKA Chupaps quiere este metodo para previsualizar el contenido de los JOBs
-    public IActionResult getStringJob(String nombre)
+    [HttpGet("getStringJob")] // Omar AKA Chupaps quiere este metodo para previsualizar el contenido de los JOBs
+    public IActionResult getStringJob([FromQuery] string nombre, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.SaveFromControllerToString(nombre, out string jobContents);
@@ -75,12 +75,12 @@ public class JobsController : ControllerBase
         }
     }
 
-    [HttpGet("uploadJob/{path}")] // este metodo permite enviar los archivos por medio de YMConnect
-    public IActionResult UploadJob(String path)
+    [HttpGet("uploadJob")] // este metodo permite enviar los archivos por medio de YMConnect
+    public IActionResult UploadJob([FromQuery] String path, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.LoadToControllerFromPath(path);
@@ -94,12 +94,12 @@ public class JobsController : ControllerBase
         }
     }
 
-    [HttpGet("saveJob/{job}")] // este metodo permite enviar los archivos por medio de YMConnect
-    public IActionResult SaveJob(String job)
+    [HttpGet("saveJob")] // este metodo permite enviar los archivos por medio de YMConnect
+    public IActionResult SaveJob([FromQuery] String job, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             //status = c.Files.SaveFromControllerToFile(job, @"C:\Users\js379\Documents\JOBS", true); // @"C:\JOBS"
@@ -119,12 +119,12 @@ public class JobsController : ControllerBase
         }
     }
 
-    [HttpDelete("deleteJob/{nombre}")] // este metodo permite borrar el JOB indicando el archivo
-    public IActionResult deleteJob(String nombre)
+    [HttpDelete("deleteJob")] // este metodo permite borrar el JOB indicando el archivo
+    public IActionResult deleteJob([FromQuery] String nombre, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Files.DeleteJobFile(nombre);

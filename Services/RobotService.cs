@@ -6,11 +6,8 @@ namespace YMConnectApi.Services
     public class RobotService
     {
 
-        // constante con la direccion IP del robot (viene predefinida en el sistema Dx200)
-        private const string robot_ip = "192.168.1.31";
-
         // se agrego una funcion que maneja la conexion por medio de la IP, esto se realiza por medio de TCP/IP
-        public MotomanController OpenConnection(out StatusInfo status)
+        public MotomanController OpenConnection(string robot_ip, out StatusInfo status)
         {
             return MotomanController.OpenConnection(robot_ip, out status);
         }
