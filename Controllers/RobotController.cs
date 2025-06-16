@@ -13,12 +13,12 @@ public class RobotController : ControllerBase
         _robotService = robotService;
     }
 
-    [HttpGet("msg/{msg}")] // este metodo manda un mensaje al robot, el cual se muestra en la pantalla del pendant (es un metodo de prueba)
-    public IActionResult SendMessage(string msg)
+    [HttpGet("msg")] // este metodo manda un mensaje al robot, el cual se muestra en la pantalla del pendant (es un metodo de prueba)
+    public IActionResult SendMessage([FromQuery] string msg, [FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status); // metodo que realiza la conexion al robot
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status); // metodo que realiza la conexion al robot
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion"); // se evalua si se pudo generar el objeto
 
             status = c.ControlCommands.DisplayStringToPendant(msg);
@@ -33,11 +33,11 @@ public class RobotController : ControllerBase
     }
 
     [HttpGet("status")] // este metodo se encarga de obtener el estado del robot, se devuelve un objeto de tipo ControllerStateData
-    public IActionResult GetRobotStatus()
+    public IActionResult GetRobotStatus([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
             status = c.Status.ReadState(out ControllerStateData stateData);
@@ -53,11 +53,11 @@ public class RobotController : ControllerBase
 
     // este metodo se encarga de obtener informacion del robot, se devuelve un objeto de tipo SystemInfoData
     [HttpGet("information")]
-    public IActionResult GetRobotData()
+    public IActionResult GetRobotData([FromQuery] string robot_ip)
     {
         try
         {
-            var c = _robotService.OpenConnection(out StatusInfo status);
+            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
 
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 

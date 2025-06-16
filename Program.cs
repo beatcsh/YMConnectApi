@@ -2,9 +2,9 @@ using YMConnectApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<RobotService>(); // registro del servicio para abrir y cerrar la conexion
+builder.Services.AddSingleton<RobotService>(); 
 
-builder.Services.AddCors(options => // Habilitar CORS globalmente
+builder.Services.AddCors(options => 
 {
     options.AddPolicy("AllowAll", policy =>
     {
@@ -27,7 +27,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseCors("AllowAll"); // configurar CORS antes de los middlewares que lo necesiten
+app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
