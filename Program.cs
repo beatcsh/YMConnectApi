@@ -3,6 +3,7 @@ using YMConnectApi.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<RobotService>();
+builder.Services.AddHostedService<RobotBackgroundService>();
 
 builder.Services.AddCors(options =>
 {
