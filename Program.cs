@@ -2,32 +2,26 @@ using YMConnectApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<RobotService>(); 
+builder.Services.AddSingleton<RobotService>();
+builder.Services.AddHostedService<RobotBackgroundService>();
 
-builder.Services.AddCors(options => 
+builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("AllowReactClient", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000") // origen de tu React
+              .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-    options.AddDefaultPolicy(builder =>
-    {
-        builder
-            .WithOrigins("http://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+              .AllowCredentials(); // importante para credenciales
     });
 });
 
+builder.Services.AddSignalR();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
-
-app.UseCors("AllowAll");
 
 if (app.Environment.IsDevelopment())
 {
@@ -35,11 +29,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
+
+app.UseCors("AllowReactClient");
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<RobotHub>("/robotHub");
 
 app.Run();
 
@@ -59,5 +59,5 @@ ____\___    ____|______   \______|___________
         |::|           
         |::|          
         |::;
-        `:/ te amo montse xd
+        `:/ te amoo montse xd
 */

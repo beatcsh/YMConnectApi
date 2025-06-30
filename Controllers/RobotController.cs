@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Mvc;
 using YMConnectApi.Services;
 using YMConnect;
 
@@ -7,10 +8,12 @@ using YMConnect;
 public class RobotController : ControllerBase
 {
     private readonly RobotService _robotService; // se crea el objeto para utilizar el servicio de conexion al robot
+    private readonly IHubContext<RobotHub> _hubContext; // de esta forma se inicializa el hub dentro del controlador
 
-    public RobotController(RobotService robotService) // este es un constructor de la clase para iniciar el objeto
+    public RobotController(RobotService robotService, IHubContext<RobotHub> hubContext) // este es un constructor de la clase para iniciar el objeto
     {
         _robotService = robotService;
+        _hubContext = hubContext;
     }
 
     [HttpGet("msg")] // este metodo manda un mensaje al robot, el cual se muestra en la pantalla del pendant (es un metodo de prueba)
@@ -33,7 +36,7 @@ public class RobotController : ControllerBase
     }
 
     [HttpGet("status")] // este metodo se encarga de obtener el estado del robot, se devuelve un objeto de tipo ControllerStateData
-    public IActionResult GetRobotStatus([FromQuery] string robot_ip)
+    public async Task<IActionResult> GetRobotStatus([FromQuery] string robot_ip)
     {
         try
         {
@@ -43,6 +46,10 @@ public class RobotController : ControllerBase
             status = c.Status.ReadState(out ControllerStateData stateData);
 
             _robotService.CloseConnection(c);
+
+            // para emitir en tiempo real el estado se usa esto
+            await _hubContext.Clients.All.SendAsync("RobotStatusUpdated", stateData);
+
             return Ok(stateData);
         }
         catch (Exception ex)
@@ -63,6 +70,7 @@ public class RobotController : ControllerBase
 
             status = c.Status.ReadSystemInformation(SystemInfoId.R1, out SystemInfoData systemInfoData);
             _robotService.CloseConnection(c);
+
             return Ok(systemInfoData);
         }
         catch (Exception ex)
