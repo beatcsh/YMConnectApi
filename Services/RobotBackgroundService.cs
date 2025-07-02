@@ -7,14 +7,18 @@ public class RobotBackgroundService : BackgroundService
     private readonly IHubContext<RobotHub> _hubContext;
     private readonly RobotService _robotService;
 
+    // este es el constructor de la clase que se ejecuta en segundo plano
     public RobotBackgroundService(IHubContext<RobotHub> hubContext, RobotService robotService)
     {
         _hubContext = hubContext;
         _robotService = robotService;
     }
 
+    // esta es la funcion que se va a ejecutar de forma constante, la idea es que haya un retraso de solo un segundo
+    // el override aqui jala para evitar comportamientos no deseados
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // mientras el tolen sea valido se va a ejecutar todo lo demas
         while (!stoppingToken.IsCancellationRequested)
         {
             var connections = RobotHub.GetConnectionIps();
@@ -22,10 +26,11 @@ public class RobotBackgroundService : BackgroundService
             // agrupamos por IP para no consultar IP repetida varias veces
             var ips = connections.Values.Distinct().ToList();
 
-            foreach (var ip in ips)
+            foreach (var ip in ips) // aqui ciclamos todas las ip, siempre va a ser una entonces no hay falla
             {
                 try
                 {
+                    // esto es un diccionario con los codigos de los IO y su nombre para irlos agrupando
                     var ioCodes = new Dictionary<uint, string>
                     {
                         { 10020, "torch" },
@@ -39,25 +44,25 @@ public class RobotBackgroundService : BackgroundService
                         { 80016, "start" },
                         { 80017, "servosReady" }
                     };
-                    var resultsIO = new Dictionary<string, bool>();
+                    var resultsIO = new Dictionary<string, bool>(); // en este almacenamos los resultados de la lectura mas adelante
 
-                    var c = _robotService.OpenConnection(ip, out var status);
+                    var c = _robotService.OpenConnection(ip, out var status); // abrimos una conexion
 
                     if (c != null)
                     {
-                        status = c.Status.ReadState(out ControllerStateData data);
-                        foreach (var kvp in ioCodes)
+                        status = c.Status.ReadState(out ControllerStateData data); // leemos el estado del robot
+                        foreach (var kvp in ioCodes) // ciclamos todas las señales IO para obtenerlas todas
                         {
-                            status = c.IO.ReadBit(kvp.Key, out bool value);
-                            resultsIO[kvp.Value] = value;
+                            status = c.IO.ReadBit(kvp.Key, out bool value); // leemos la señal
+                            resultsIO[kvp.Value] = value; // almacenamos el resultado
                         }
 
-                         _robotService.CloseConnection(c);
+                        _robotService.CloseConnection(c); // se cierra la conexion
 
-                        // Envia solo a las conexiones que tienen esa IP
+                        // envia solo a las conexiones que tienen esa IP
                         var clientsForIp = connections.Where(kvp => kvp.Value == ip).Select(kvp => kvp.Key);
 
-                        foreach (var clientId in clientsForIp)
+                        foreach (var clientId in clientsForIp) // para cada cliente conectado con su respectivo ID le mandamos por notificacion push los resultados obtenidos con esta funcion
                         {
                             await _hubContext.Clients.Client(clientId).SendAsync("RobotStatusUpdated", data);
                             await _hubContext.Clients.Client(clientId).SendAsync("RobotDiagnostic", resultsIO);
@@ -67,10 +72,11 @@ public class RobotBackgroundService : BackgroundService
                 catch
                 {
                     // no se como manejar la excepcion todavia xd
+                    Console.WriteLine("we have an issue");
                 }
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken); // se repetira este proceso cada segundo, esto nos permitra tener lo mas cerca que se pueda el estado en tiempo real
         }
     }
 }
