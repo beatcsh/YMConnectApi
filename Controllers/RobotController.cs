@@ -17,14 +17,14 @@ public class RobotController : ControllerBase
     }
 
     [HttpGet("msg")] // este metodo manda un mensaje al robot, el cual se muestra en la pantalla del pendant (es un metodo de prueba)
-    public IActionResult SendMessage([FromQuery] string msg, [FromQuery] string robot_ip)
+    public IActionResult SendMessage([FromQuery] string robot_ip)
     {
         try
         {
             var c = _robotService.OpenConnection(robot_ip, out StatusInfo status); // metodo que realiza la conexion al robot
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion"); // se evalua si se pudo generar el objeto
 
-            status = c.ControlCommands.DisplayStringToPendant(msg);
+            status = c.ControlCommands.DisplayStringToPendant("Conectado con YMConnect");
 
             _robotService.CloseConnection(c); // metodo de cierre de la conexion
             return Ok(status);
@@ -35,6 +35,7 @@ public class RobotController : ControllerBase
         }
     }
 
+    // no se si quitarlo de aqui, se usa para ver si hay conexion, pero mejor intento con el de arriba pa que se vea mas profesional jajajajajaja
     [HttpGet("status")] // este metodo se encarga de obtener el estado del robot, se devuelve un objeto de tipo ControllerStateData
     public async Task<IActionResult> GetRobotStatus([FromQuery] string robot_ip)
     {

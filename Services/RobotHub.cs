@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 public class RobotHub : Hub
 {

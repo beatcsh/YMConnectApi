@@ -9,7 +9,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactClient", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // origen de tu React
+        policy.WithOrigins("http://localhost:3000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials(); // importante para credenciales

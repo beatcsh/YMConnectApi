@@ -37,25 +37,6 @@ public class JobsController : ControllerBase
 
     }
 
-    [HttpGet("countJobs")] // esta funcion de aqui o metodo como le quieran llamar se utiliza para contar cuantos JOBs se tienen
-    public IActionResult GetJobsCount([FromQuery] string robot_ip)
-    {
-        try
-        {
-            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
-            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
-
-            status = c.Files.GetFileCount(FileType.Job_JBI, out Int32 count);
-
-            _robotService.CloseConnection(c);
-            return Ok(count);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-        }
-    }
-
     [HttpGet("getStringJob")] // Omar AKA Chupaps quiere este metodo para previsualizar el contenido de los JOBs
     public IActionResult getStringJob([FromQuery] string nombre, [FromQuery] string robot_ip)
     {
@@ -75,50 +56,7 @@ public class JobsController : ControllerBase
         }
     }
 
-    [HttpGet("uploadJob")] // este metodo permite enviar los archivos por medio de YMConnect
-    public IActionResult UploadJob([FromQuery] String path, [FromQuery] string robot_ip)
-    {
-        try
-        {
-            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
-            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
-
-            status = c.Files.LoadToControllerFromPath(path);
-
-            _robotService.CloseConnection(c);
-            return Ok(status);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-        }
-    }
-
-    [HttpGet("saveJob")] // este metodo permite enviar los archivos por medio de YMConnect
-    public IActionResult SaveJob([FromQuery] String job, [FromQuery] string robot_ip)
-    {
-        try
-        {
-            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
-            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
-
-            //status = c.Files.SaveFromControllerToFile(job, @"C:\Users\js379\Documents\JOBS", true); // @"C:\JOBS"
-
-            var relativePath = Path.Combine(Directory.GetCurrentDirectory(), "JOBS");
-            if (!Directory.Exists(relativePath))
-                Directory.CreateDirectory(relativePath);
-
-            status = c.Files.SaveFromControllerToFile(job, relativePath, true);
-
-            _robotService.CloseConnection(c);
-            return Ok(status);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-        }
-    }
-
+    /* se podra usar quizas por eso no la borro
     [HttpDelete("deleteJob")] // este metodo permite borrar el JOB indicando el archivo
     public IActionResult deleteJob([FromQuery] String nombre, [FromQuery] string robot_ip)
     {
@@ -137,5 +75,6 @@ public class JobsController : ControllerBase
             return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
         }
     }
+    */
 
 }

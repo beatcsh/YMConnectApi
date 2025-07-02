@@ -35,6 +35,7 @@ public class ProcessController : ControllerBase
         }
     }
 
+    /* por ahora no se usa, quizas mas adelante si
     // este metodo obtiene la informacion del JOB que se esta ejecutando en el momento
     [HttpGet("exeJob")]
     public IActionResult GetExecutingData([FromQuery] string robot_ip)
@@ -53,6 +54,7 @@ public class ProcessController : ControllerBase
             return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
         }
     }
+    */
 
     // este metodo se encarga de iniciar el JOB activo del robot
     [HttpGet("startJob")]
@@ -96,35 +98,7 @@ public class ProcessController : ControllerBase
         }
     }
 
-    // METODO QUE NOMAS NO QUIERE FUNCIONAR PORQUE NO REGRESA AL ROBOT Y TIENE LA LIMITANTE DE QUE NO FUNCIONA CON GENERACIONES ANTES DEL YRC1000
-    [HttpGet("setInitialPosition")]
-    public IActionResult SetInitialPosition([FromQuery] string robot_ip)
-    {
-        try
-        {
-            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
-            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
-
-            PositionData destination = new PositionData();
-            destination.AxisData = new double[] { 0.00, 0.00, 0.00, 0.00, 0.00, 0.00 };
-            destination.CoordinateType = CoordinateType.Pulse;
-
-            LinearMotion motion = new LinearMotion(ControlGroupId.R1, destination, 30, new MotionAccelDecel());
-
-            // status = c.MotionManager.AddPointToTrajectory(motion);
-            status = c.ControlCommands.SetCycleMode(CycleMode.Cycle);
-            status = c.ControlCommands.SetServos(SignalStatus.ON);
-            status = c.MotionManager.MotionStart();
-
-            _robotService.CloseConnection(c);
-            return Ok(status);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-        }
-    }
-
+    /* fue el primer metodo que funciono, lo guardo por cariño
     // METODO PARA CAMBIAR EL CICLO, AQUI ES DE PRUEBA NADA MAS
     [HttpGet("changeCycle")]
     public IActionResult SetCycleMode([FromQuery] string robot_ip)
@@ -144,6 +118,7 @@ public class ProcessController : ControllerBase
             return StatusCode(500, "Error al obtener alarmas del robot: " + ex.Message);
         }
     }
+    */
 
     [HttpGet("coordinates")] // este metodo nos trae las coordenadas del robot, forzosamente tiene que encontrarse en REMOTE MODE para poder leer sus datos
     public IActionResult GetCoordinates([FromQuery] string robot_ip)
