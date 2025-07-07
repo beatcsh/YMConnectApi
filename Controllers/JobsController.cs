@@ -56,25 +56,4 @@ public class JobsController : ControllerBase
         }
     }
 
-    /* se podra usar quizas por eso no la borro
-    [HttpDelete("deleteJob")] // este metodo permite borrar el JOB indicando el archivo
-    public IActionResult deleteJob([FromQuery] String nombre, [FromQuery] string robot_ip)
-    {
-        try
-        {
-            var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
-            if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
-
-            status = c.Files.DeleteJobFile(nombre);
-
-            _robotService.CloseConnection(c);
-            return Ok(status);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, "Error al obtener el estado del robot: " + ex.Message);
-        }
-    }
-    */
-
 }
