@@ -50,12 +50,15 @@ public class RobotBackgroundService : BackgroundService
 
                     if (c != null)
                     {
-                        status = c.Status.ReadState(out ControllerStateData data); // leemos el estado del robot
+                        status = c.Status.ReadState(out ControllerStateData statusData); // leemos el estado del robot
+
                         foreach (var kvp in ioCodes) // ciclamos todas las señales IO para obtenerlas todas
                         {
                             status = c.IO.ReadBit(kvp.Key, out bool value); // leemos la señal
                             resultsIO[kvp.Value] = value; // almacenamos el resultado
                         }
+
+                        status = c.Faults.GetActiveAlarms(out ActiveAlarms alarms);
 
                         _robotService.CloseConnection(c); // se cierra la conexion
 
@@ -64,8 +67,9 @@ public class RobotBackgroundService : BackgroundService
 
                         foreach (var clientId in clientsForIp) // para cada cliente conectado con su respectivo ID le mandamos por notificacion push los resultados obtenidos con esta funcion
                         {
-                            await _hubContext.Clients.Client(clientId).SendAsync("RobotStatusUpdated", data);
+                            await _hubContext.Clients.Client(clientId).SendAsync("RobotStatusUpdated", statusData);
                             await _hubContext.Clients.Client(clientId).SendAsync("RobotDiagnostic", resultsIO);
+                            await _hubContext.Clients.Client(clientId).SendAsync("ActiveAlarms", alarms);
                         }
                     }
                 }
@@ -76,7 +80,7 @@ public class RobotBackgroundService : BackgroundService
                 }
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken); // se repetira este proceso cada segundo, esto nos permitra tener lo mas cerca que se pueda el estado en tiempo real
+            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // se repetira este proceso cada segundo, esto nos permitra tener lo mas cerca que se pueda el estado en tiempo real
         }
     }
 }
