@@ -34,14 +34,14 @@ public class IoInterfaceController : ControllerBase
     }
 
     [HttpGet("writeIO")]
-    public IActionResult WriteIo([FromQuery] string robot_ip, [FromQuery] bool value)
+    public IActionResult WriteIo([FromQuery] string robot_ip, [FromQuery] bool value, uint entry)
     {
         try
         {
             var c = _robotService.OpenConnection(robot_ip, out StatusInfo status);
             if (c == null) return StatusCode(500, "No se pudo establecer una conexion");
 
-            status = c.IO.WriteBit(10010, value);
+            status = c.IO.WriteBit(entry, value);
 
             _robotService.CloseConnection(c);
             return Ok(status);
