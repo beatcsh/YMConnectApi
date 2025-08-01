@@ -80,7 +80,7 @@ public class RobotBackgroundService : BackgroundService
                 }
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // se repetira este proceso cada segundo, esto nos permitra tener lo mas cerca que se pueda el estado en tiempo real
+            await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken); // se repetira este proceso cada 2 segundos, esto nos permitra tener lo mas cerca que se pueda el estado en tiempo real
         }
     }
 }
